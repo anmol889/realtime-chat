@@ -1,0 +1,28 @@
+{
+  "name": "realtime-chat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Scalable real-time chat: NestJS GraphQL user + chat services, React frontend, Postgres, Redis, Docker Compose",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter './apps/*' build",
+    "lint": "pnpm -r --filter './apps/*' lint",
+    "typecheck": "pnpm -r --filter './apps/*' --filter e2e typecheck",
+    "prisma:generate": "pnpm -r --filter './apps/*-service' prisma:generate",
+    "test": "pnpm -r --filter './apps/*' test",
+    "test:int": "pnpm -r --filter './apps/*-service' test:int",
+    "test:e2e": "pnpm --filter e2e test",
+    "test:e2e:ui": "pnpm --filter e2e test:ui",
+    "up": "docker compose up --build -d",
+    "up:test": "docker compose -f docker-compose.yml -f docker-compose.test.yml up --build -d --wait",
+    "down": "docker compose down -v",
+    "logs": "docker compose logs -f --tail=100"
+  },
+  "devDependencies": {
+    "prettier": "3.9.10",
+    "typescript": "5.9.3"
+  }
+}

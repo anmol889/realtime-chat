@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/prisma/generated
+.git
+e2e
+docs
+README.md
