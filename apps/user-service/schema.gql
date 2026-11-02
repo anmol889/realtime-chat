@@ -1,0 +1,33 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateUserInput {
+  displayName: String
+  username: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+}
+
+type Query {
+  """Look up a user by id (null if absent)."""
+  user(id: ID!): User
+  userByUsername(username: String!): User
+
+  """Batch lookup; missing ids are simply omitted."""
+  users(ids: [ID!]!): [User!]!
+}
+
+type User {
+  createdAt: DateTime!
+  displayName: String!
+  id: ID!
+  username: String!
+}
