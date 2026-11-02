@@ -1,0 +1,72 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Chat {
+  createdAt: DateTime!
+  id: ID!
+
+  """seq of the latest message; 0 for an empty chat."""
+  lastSeq: Int!
+
+  """User ids of members (resolve names via user-service)."""
+  memberIds: [ID!]!
+  name: String!
+}
+
+input CreateChatInput {
+  """The creator joins the chat automatically."""
+  creatorId: ID!
+  name: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Message {
+  chatId: ID!
+
+  """Echo of the client-supplied id, for optimistic UI reconciliation."""
+  clientMessageId: String
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  senderId: ID!
+
+  """Gap-free, strictly increasing per chat. Sort and dedupe by this."""
+  seq: Int!
+}
+
+type Mutation {
+  createChat(input: CreateChatInput!): Chat!
+  joinChat(chatId: ID!, userId: ID!): Chat!
+  sendMessage(input: SendMessageInput!): Message!
+}
+
+type Query {
+  chat(id: ID!): Chat
+
+  """All chats (demo scope: no pagination, capped at 200)."""
+  chats: [Chat!]!
+
+  """
+  Ordered history. Use afterSeq as a catch-up cursor, beforeSeq to load older messages.
+  """
+  messages(afterSeq: Int = 0, beforeSeq: Int, chatId: ID!, limit: Int = 50): [Message!]!
+}
+
+input SendMessageInput {
+  chatId: ID!
+  clientMessageId: String
+  content: String!
+  senderId: ID!
+}
+
+type Subscription {
+  """
+  Live stream of new messages in a chat, delivered from whichever instance persisted them.
+  """
+  messageAdded(chatId: ID!): Message!
+}

@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+  // Per-service output: in a pnpm workspace the default location is shared by every package,
+  // so two services would overwrite each other's generated client.
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Chat {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(64)
+  /// Per-chat monotonic counter. Incremented with a row lock inside the send-message
+  /// transaction, so `Message.seq` is a gap-free total order per chat across all instances.
+  lastSeq   Int      @default(0) @map("last_seq")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  members  ChatMember[]
+  messages Message[]
+
+  @@map("chats")
+}
+
+model ChatMember {
+  chatId   String   @map("chat_id") @db.Uuid
+  /// Owned by user-service; intentionally no FK across service boundaries.
+  userId   String   @map("user_id") @db.Uuid
+  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@id([chatId, userId])
+  @@index([userId])
+  @@map("chat_members")
+}
+
+model Message {
+  id              String   @id @default(uuid()) @db.Uuid
+  chatId          String   @map("chat_id") @db.Uuid
+  senderId        String   @map("sender_id") @db.Uuid
+  seq             Int
+  content         String   @db.VarChar(4000)
+  /// Optional client-generated id for idempotent retries / optimistic UI reconciliation.
+  clientMessageId String?  @map("client_message_id") @db.VarChar(64)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, seq])
+  @@unique([chatId, senderId, clientMessageId])
+  @@map("messages")
+}
