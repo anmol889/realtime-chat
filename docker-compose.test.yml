@@ -1,0 +1,12 @@
+# Overlay for the end-to-end suite: expose each backend instance directly so a test can
+# subscribe on one instance and send through the other, bypassing the load balancer's choice.
+#   docker compose -f docker-compose.yml -f docker-compose.test.yml up --build -d
+services:
+  user-service-1:
+    ports: ["4001:4000"]
+  user-service-2:
+    ports: ["4002:4000"]
+  chat-service-1:
+    ports: ["4101:4100"]
+  chat-service-2:
+    ports: ["4102:4100"]

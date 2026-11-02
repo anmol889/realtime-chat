@@ -1,0 +1,8 @@
+# Overlay for running the NestJS services on the host (pnpm start:dev) against containerised infra:
+# publishes Postgres and Redis on their default ports.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres redis
+services:
+  postgres:
+    ports: ["5432:5432"]
+  redis:
+    ports: ["6379:6379"]
