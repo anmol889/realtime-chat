@@ -1,0 +1,39 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.15.9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - name: Unit tests (both services + web) and build
+        run: pnpm test && pnpm build
+      - name: Integration tests (Testcontainers; 2 chat instances in one process)
+        run: pnpm test:int
+
+      - name: Start the full stack (2 instances of each service)
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml up --build -d --wait
+      - name: E2E — cross-instance API flow
+        run: pnpm --filter e2e test
+      - name: E2E — two-browser UI flow
+        run: |
+          pnpm --filter e2e exec playwright install --with-deps chromium
+          pnpm --filter e2e test:ui
+      - name: Stack logs on failure
+        if: failure()
+        run: docker compose logs --tail=200
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
